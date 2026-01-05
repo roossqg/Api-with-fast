@@ -1,16 +1,17 @@
 from http import HTTPStatus
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.responses import HTMLResponse
 
-from fast_pr.schemas import Mens
+from fast_pr.schemas import Mens, Userdb, Userlist, UserPublic, UserSchema
 
 app = FastAPI()
+user_database = []
 
 
 @app.get('/', status_code=HTTPStatus.OK, response_model=Mens)
 def root():
-    return {'message': 'hello11'}
+    return {'message': 'hello'}
 
 
 @app.get('/ht_res', response_class=HTMLResponse, status_code=200)
@@ -25,3 +26,43 @@ def hello1_htm():
         </body>
     </html>
     """
+
+
+@app.post('/users/', status_code=HTTPStatus.CREATED, response_model=UserPublic)
+def create_user(user: UserSchema):
+    user_plus_id = Userdb(**user.model_dump(), id=1 + len(user_database))
+
+    user_database.append(user_plus_id)
+
+    return user_plus_id
+
+
+@app.get('/users/', response_model=Userlist)
+def read_database():
+    return {'users': user_database}
+
+
+@app.put('/users/{user_id}', response_model=UserPublic)
+def update_user(user_id: int, user: UserSchema):  # user for modify
+
+    if user_id > len(user_database) or user_id < 1:
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND, detail='user not found'
+        )
+
+    user_with_id = Userdb(**user.model_dump(), id=user_id)
+    user_database[user_id - 1] = user_with_id
+
+    return user_with_id
+
+
+@app.delete('/users/{user_id}', response_model=Mens)
+def delete_users(user_id: int):
+    if user_id > len(user_database) or user_id < 1:
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND, detail='no user for del'
+        )
+
+    del user_database[user_id - 1]
+
+    return {'message': f'user with id: {user_id} deleted'}
