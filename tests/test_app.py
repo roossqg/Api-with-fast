@@ -39,6 +39,17 @@ def test_getusers(client):
     }
 
 
+def test_get_user_ok(client):
+    response = client.get('/users/1')
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.json() == {
+        'username': 'carl',
+        'email': 'carl@example.com',
+        'id': 1,
+    }
+
+
 def test_update_user_ok(client):
     response = client.put(
         '/users/1',
@@ -92,15 +103,6 @@ def test_get_user_not(client):
     assert response.json() == {'detail': 'no user here'}
 
 
-def test_get_user_ok(client):
-    response = client.get('/users/1')
-
-    assert response.status_code == HTTPStatus.OK
-    assert response.json() == {
-        'username': 'show',
-        'email': 'show@example.com',
-        'id': 1,
-    }
-
-
 # model reponse from exception
+
+#all this in due order to use respecting database

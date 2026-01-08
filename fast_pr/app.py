@@ -68,8 +68,8 @@ def delete_users(user_id: int):
     return {'message': 'user deleted'}
 
 
-@app.get('/users/{user_id}', response_model=UserPublic)
 # just one method.tests are the server comunnications (2xx,4xx,etc)
+@app.get('/users/{user_id}', response_model=UserPublic)
 def get_user(user_id: int):
     if user_id > len(user_database) or user_id < 1:
         raise HTTPException(
