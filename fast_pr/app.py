@@ -60,9 +60,23 @@ def update_user(user_id: int, user: UserSchema):  # user for modify
 def delete_users(user_id: int):
     if user_id > len(user_database) or user_id < 1:
         raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND, detail='no user for del'
+            status_code=HTTPStatus.NOT_FOUND, detail='user not found'
         )
 
     del user_database[user_id - 1]
 
-    return {'message': f'user with id: {user_id} deleted'}
+    return {'message': 'user deleted'}
+
+
+@app.get('/users/{user_id}', response_model=UserPublic)
+# just one method.tests are the server comunnications (2xx,4xx,etc)
+def get_user(user_id: int):
+    if user_id > len(user_database) or user_id < 1:
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND, detail='no user here'
+        )
+
+    return user_database[user_id - 1]
+
+
+# index is not database id
