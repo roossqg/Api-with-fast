@@ -6,10 +6,11 @@
 __pycache__
 .ruff_cache
 .pytest_cache
+tests/__pycache__
 
 htmlcov
 .coverage
-poetry.lock
+poetry.
 pyproject.toml
 
 
