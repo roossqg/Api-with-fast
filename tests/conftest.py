@@ -1,6 +1,9 @@
+from contextlib import contextmanager
+from datetime import datetime
+
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, event
 from sqlalchemy.orm import Session
 
 from fast_pr.app import app
@@ -14,6 +17,7 @@ def client():
 
 @pytest.fixture
 def session():
+    # sql object out of metadata
 
     engine = create_engine('sqlite:///:memory:')
 
@@ -26,3 +30,23 @@ def session():
     table_registry.metadata.drop_all(engine)
     # --> exit from base of database after session
     engine.dispose()
+
+
+@contextmanager
+def _mockdb_in_time(*, model, time=datetime(2025, 1, 1)):
+
+    def fake_data(mappe, connection, target):
+
+        if hasattr(target, 'creation'):  # verify if object has taget atibute
+            target.creation = time
+
+    event.listen(model, 'before_insert', fake_data)
+
+    yield time
+
+    event.remove(model, 'before_insert', fake_data)
+
+
+@pytest.fixture
+def mock_db():
+    return _mockdb_in_time
