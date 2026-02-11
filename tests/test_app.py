@@ -105,4 +105,4 @@ def test_get_user_not(client):
 
 # model reponse from exception
 
-#all this in due order to use respecting database
+# all this in due order to use respecting database
