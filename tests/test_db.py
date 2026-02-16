@@ -23,6 +23,7 @@ def test_create_user(session, mock_db):
         'password': 'as34ty',
         'email': 'bob@example.com',
         'creation': time,
+        'last_update': time,
     }
 
     # --> verify structure in db

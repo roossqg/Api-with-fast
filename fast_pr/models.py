@@ -17,5 +17,8 @@ class Users:
     creation: Mapped[datetime] = mapped_column(
         init=False, server_default=func.now()
     )
+    last_update: Mapped[datetime] = mapped_column(
+        init=False,server_default=func.now(),onupdate=func.now()
+    )
 
     # init : increment

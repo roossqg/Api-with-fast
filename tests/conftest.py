@@ -35,10 +35,14 @@ def session():
 @contextmanager
 def _mockdb_in_time(*, model, time=datetime(2025, 1, 1)):
 
-    def fake_data(mappe, connection, target):
+    def fake_data(mapper, connection, target):
 
         if hasattr(target, 'creation'):  # verify if object has taget atibute
             target.creation = time
+
+        if hasattr(target, 'last_update'):
+            target.last_update = time
+            # each model atr traks its value with time
 
     event.listen(model, 'before_insert', fake_data)
 
