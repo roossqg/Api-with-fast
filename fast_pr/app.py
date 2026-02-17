@@ -1,14 +1,13 @@
 from http import HTTPStatus
 
-from fastapi import FastAPI, HTTPException,Depends
+from fastapi import Depends, FastAPI, HTTPException
 from fastapi.responses import HTMLResponse
+from sqlalchemy import select
+from sqlalchemy.orm import Session
 
-from fast_pr.schemas import Mens, Userdb, Userlist, UserPublic, UserSchema
 from fast_pr.database import get_session
 from fast_pr.models import Users
-
-from sqlalchemy.orm import Session
-from sqlalchemy import select
+from fast_pr.schemas import Mens, Userdb, Userlist, UserPublic, UserSchema
 
 app = FastAPI()
 user_database = []
@@ -34,40 +33,40 @@ def hello1_htm():
 
 
 @app.post('/users/', status_code=HTTPStatus.CREATED, response_model=UserPublic)
-def create_user(user: UserSchema,session:Session=Depends(get_session)):
-    #logs with session
+def create_user(user: UserSchema, session: Session = Depends(get_session)):
+    # logs with session
     db_user = session.scalar(
         select(Users).where(
-            (Users.name==user.username) | (Users.email==user.email)
+            (Users.username == user.username) | (Users.email == user.email)
         )
-    )
+    )  # verify if found user is already in db:
 
     if db_user:
-    #verify in databse
+        # verify in databse
 
-        if db_user.name == user.username:
+        if db_user.username == user.username:
             raise HTTPException(
-                HTTPStatus.CONFLICT,
-                detail="username already exists",
+                status_code=HTTPStatus.CONFLICT,
+                detail='username already exists',
             )
-        
-        if db_user.email == user.email:
-            raise HTTPException(
-                HTTPStatus.CONFLICT,
-                detail="email already exists",
-            )
-        
 
+        elif db_user.email == user.email:
+            raise HTTPException(
+                status_code=HTTPStatus.CONFLICT,
+                detail='email already exists',
+            )
+
+    # define user and insert into db:
     db_user = Users(
-        name = user.username,email = user.email,password = user.password
+        username=user.username, email=user.email, password=user.password
     )
-        
 
     session.add(db_user)
     session.commit()
     session.refresh(db_user)
-    
+
     return db_user
+
 
 @app.get('/users/', response_model=Userlist)
 def read_database():

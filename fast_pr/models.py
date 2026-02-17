@@ -11,14 +11,14 @@ class Users:
     __tablename__ = 'users'
 
     id: Mapped[int] = mapped_column(init=False, primary_key=True)
-    name: Mapped[str] = mapped_column(unique=True)
+    username: Mapped[str] = mapped_column(unique=True)
     email: Mapped[str] = mapped_column(unique=True)
     password: Mapped[str]
     creation: Mapped[datetime] = mapped_column(
         init=False, server_default=func.now()
     )
     last_update: Mapped[datetime] = mapped_column(
-        init=False,server_default=func.now(),onupdate=func.now()
+        init=False, server_default=func.now(), onupdate=func.now()
     )
 
     # init : increment
