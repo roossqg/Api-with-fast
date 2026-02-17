@@ -1,9 +1,14 @@
 from http import HTTPStatus
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException,Depends
 from fastapi.responses import HTMLResponse
 
 from fast_pr.schemas import Mens, Userdb, Userlist, UserPublic, UserSchema
+from fast_pr.database import get_session
+from fast_pr.models import Users
+
+from sqlalchemy.orm import Session
+from sqlalchemy import select
 
 app = FastAPI()
 user_database = []
@@ -29,13 +34,40 @@ def hello1_htm():
 
 
 @app.post('/users/', status_code=HTTPStatus.CREATED, response_model=UserPublic)
-def create_user(user: UserSchema):
-    user_plus_id = Userdb(**user.model_dump(), id=1 + len(user_database))
+def create_user(user: UserSchema,session:Session=Depends(get_session)):
+    #logs with session
+    db_user = session.scalar(
+        select(Users).where(
+            (Users.name==user.username) | (Users.email==user.email)
+        )
+    )
 
-    user_database.append(user_plus_id)
+    if db_user:
+    #verify in databse
 
-    return user_plus_id
+        if db_user.name == user.username:
+            raise HTTPException(
+                HTTPStatus.CONFLICT,
+                detail="username already exists",
+            )
+        
+        if db_user.email == user.email:
+            raise HTTPException(
+                HTTPStatus.CONFLICT,
+                detail="email already exists",
+            )
+        
 
+    db_user = Users(
+        name = user.username,email = user.email,password = user.password
+    )
+        
+
+    session.add(db_user)
+    session.commit()
+    session.refresh(db_user)
+    
+    return db_user
 
 @app.get('/users/', response_model=Userlist)
 def read_database():
