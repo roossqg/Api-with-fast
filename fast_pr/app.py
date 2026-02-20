@@ -3,11 +3,12 @@ from http import HTTPStatus
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.responses import HTMLResponse
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from fast_pr.database import get_session
 from fast_pr.models import Users
-from fast_pr.schemas import Mens, Userdb, Userlist, UserPublic, UserSchema
+from fast_pr.schemas import Mens, Userlist, UserPublic, UserSchema
 
 app = FastAPI()
 user_database = []
@@ -79,17 +80,35 @@ def read_database(
 
 
 @app.put('/users/{user_id}', response_model=UserPublic)
-def update_user(user_id: int, user: UserSchema):  # user for modify
+def update_user(
+    user_id: int, user: UserSchema, session: Session = Depends(get_session)
+):
+    # user for modify
 
-    if user_id > len(user_database) or user_id < 1:
+    db_user = session.scalar(select(Users).where(Users.id == user.id))
+    # search for one object on db
+
+    if not db_user:  # not found
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND, detail='user not found'
         )
 
-    user_with_id = Userdb(**user.model_dump(), id=user_id)
-    user_database[user_id - 1] = user_with_id
+    try:
+        # apply changes on db user:
+        db_user.username = user.username
+        db_user.email = user.email
+        db_user.password = user.password
 
-    return user_with_id
+        session.commit()  # no adds ,just modify atributes
+        session.refresh(db_user)  # -> gets User public format to return
+
+        return db_user
+
+    except IntegrityError:
+        raise HTTPException(
+            status_code=HTTPStatus.CONFLICT,
+            detail='username or email already exists'
+        )
 
 
 @app.delete('/users/{user_id}', response_model=Mens)
