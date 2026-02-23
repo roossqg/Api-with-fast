@@ -85,7 +85,7 @@ def update_user(
 ):
     # user for modify
 
-    db_user = session.scalar(select(Users).where(Users.id == user.id))
+    db_user = session.scalar(select(Users).where(Users.id == user_id))
     # search for one object on db
 
     if not db_user:  # not found
@@ -112,13 +112,19 @@ def update_user(
 
 
 @app.delete('/users/{user_id}', response_model=Mens)
-def delete_users(user_id: int):
-    if user_id > len(user_database) or user_id < 1:
+def delete_users(user_id: int,session : Session = Depends(get_session)):
+
+    db_user=session.scalar(select(Users).where(Users.id == user_id))
+
+
+    if not db_user:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND, detail='user not found'
         )
 
-    del user_database[user_id - 1]
+
+    session.delete(db_user)
+    session.commit()
 
     return {'message': 'user deleted'}
 
