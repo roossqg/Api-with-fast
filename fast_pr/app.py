@@ -107,21 +107,19 @@ def update_user(
     except IntegrityError:
         raise HTTPException(
             status_code=HTTPStatus.CONFLICT,
-            detail='username or email already exists'
+            detail='username or email already exists',
         )
 
 
 @app.delete('/users/{user_id}', response_model=Mens)
-def delete_users(user_id: int,session : Session = Depends(get_session)):
+def delete_users(user_id: int, session: Session = Depends(get_session)):
 
-    db_user=session.scalar(select(Users).where(Users.id == user_id))
-
+    db_user = session.scalar(select(Users).where(Users.id == user_id))
 
     if not db_user:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND, detail='user not found'
         )
-
 
     session.delete(db_user)
     session.commit()
@@ -131,13 +129,22 @@ def delete_users(user_id: int,session : Session = Depends(get_session)):
 
 # just one method.tests are the server comunnications (2xx,4xx,etc)
 @app.get('/users/{user_id}', response_model=UserPublic)
-def get_user(user_id: int):
-    if user_id > len(user_database) or user_id < 1:
+def get_user(
+    user_id: int, user: UserSchema, session: Session = Depends(get_session)
+):
+
+    db_user = session.scalar(select(Users).where(Users.id == user_id))
+
+    if not db_user:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND, detail='no user here'
         )
 
-    return user_database[user_id - 1]
+    db_user = Users(
+        username=user.username, email=user.email, password=user.password
+    )
+
+    return {'user': db_user}
 
 
 # index is not database id
