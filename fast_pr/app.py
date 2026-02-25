@@ -129,22 +129,20 @@ def delete_users(user_id: int, session: Session = Depends(get_session)):
 
 # just one method.tests are the server comunnications (2xx,4xx,etc)
 @app.get('/users/{user_id}', response_model=UserPublic)
-def get_user(
-    user_id: int, user: UserSchema, session: Session = Depends(get_session)
-):
+def get_user(user_id: int, session: Session = Depends(get_session)):
 
     db_user = session.scalar(select(Users).where(Users.id == user_id))
+    # model return
 
     if not db_user:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND, detail='no user here'
         )
 
-    db_user = Users(
-        username=user.username, email=user.email, password=user.password
-    )
+    # db_user = Users(
+    # username=user.username, email=user.email, password=user.password
 
-    return {'user': db_user}
+    return db_user
 
 
 # index is not database id
