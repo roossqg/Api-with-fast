@@ -2,13 +2,19 @@ from http import HTTPStatus
 
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.responses import HTMLResponse
+from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from fast_pr.database import get_session
 from fast_pr.models import Users
-from fast_pr.schemas import Mens, Userlist, UserPublic, UserSchema
+from fast_pr.schemas import Mens, Token, Userlist, UserPublic, UserSchema
+from fast_pr.security import (
+    create_acess_token,
+    get_hash_password,
+    verify_password,
+)
 
 app = FastAPI()
 user_database = []
@@ -57,9 +63,11 @@ def create_user(user: UserSchema, session: Session = Depends(get_session)):
                 detail='email already exists',
             )
 
+    hashed_password = get_hash_password(user.password)
+
     # define user and insert into db:
     db_user = Users(
-        username=user.username, email=user.email, password=user.password
+        username=user.username, email=user.email, password=hashed_password
     )
 
     session.add(db_user)
@@ -97,7 +105,7 @@ def update_user(
         # apply changes on db user:
         db_user.username = user.username
         db_user.email = user.email
-        db_user.password = user.password
+        db_user.password = get_hash_password(user.password)
 
         session.commit()  # no adds ,just modify atributes
         session.refresh(db_user)  # -> gets User public format to return
@@ -146,3 +154,30 @@ def get_user(user_id: int, session: Session = Depends(get_session)):
 
 
 # index is not database id
+
+
+@app.post('/token', response_model=Token)
+def login_for_access_token(
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    session: Session = Depends(get_session),
+):
+
+    user = session.scalar(
+        select(Users).where(Users.email == form_data.username)
+    )
+
+    if not user:
+        raise HTTPException(
+            status_code=HTTPStatus.UNAUTHORIZED,
+            detail='Incorrect email or password',
+        )
+
+    if not verify_password(form_data.password, user.password):
+        raise HTTPException(
+            status_code=HTTPStatus.UNAUTHORIZED,
+            detail='Incorrect email or password',
+        )
+
+    access_token = create_acess_token(data={'sub': user.email})
+
+    return {'access_token': access_token, 'token_type': 'bearer'}
