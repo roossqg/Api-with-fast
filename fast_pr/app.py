@@ -12,6 +12,7 @@ from fast_pr.models import Users
 from fast_pr.schemas import Mens, Token, Userlist, UserPublic, UserSchema
 from fast_pr.security import (
     create_acess_token,
+    get_current_user,
     get_hash_password,
     verify_password,
 )
@@ -89,9 +90,17 @@ def read_database(
 
 @app.put('/users/{user_id}', response_model=UserPublic)
 def update_user(
-    user_id: int, user: UserSchema, session: Session = Depends(get_session)
+    user_id: int,
+    user: UserSchema,
+    session: Session = Depends(get_session),
+    current_user: Users = Depends(get_current_user),
 ):
     # user for modify
+
+    if current_user.id != user_id:
+        raise HTTPException(
+            status_code=HTTPStatus.FORBIDDEN, detail='Not Enough Permissions'
+        )
 
     db_user = session.scalar(select(Users).where(Users.id == user_id))
     # search for one object on db
@@ -103,14 +112,14 @@ def update_user(
 
     try:
         # apply changes on db user:
-        db_user.username = user.username
-        db_user.email = user.email
-        db_user.password = get_hash_password(user.password)
+        current_user.username = user.username
+        current_user.email = user.email
+        current_user.password = get_hash_password(user.password)
 
         session.commit()  # no adds ,just modify atributes
-        session.refresh(db_user)  # -> gets User public format to return
+        session.refresh(current_user)  # -> gets User public format to return
 
-        return db_user
+        return current_user
 
     except IntegrityError:
         raise HTTPException(
@@ -120,7 +129,16 @@ def update_user(
 
 
 @app.delete('/users/{user_id}', response_model=Mens)
-def delete_users(user_id: int, session: Session = Depends(get_session)):
+def delete_users(
+    user_id: int,
+    session: Session = Depends(get_session),
+    current_user: Users = Depends(get_current_user),
+):
+
+    if current_user.id != user_id:
+        raise HTTPException(
+            status_code=HTTPStatus.FORBIDDEN, detail='Not Enough Permissions'
+        )
 
     db_user = session.scalar(select(Users).where(Users.id == user_id))
 
@@ -129,7 +147,7 @@ def delete_users(user_id: int, session: Session = Depends(get_session)):
             status_code=HTTPStatus.NOT_FOUND, detail='user not found'
         )
 
-    session.delete(db_user)
+    session.delete(current_user)
     session.commit()
 
     return {'message': 'user deleted'}
