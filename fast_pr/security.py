@@ -1,8 +1,15 @@
 from datetime import datetime, timedelta
+from http import HTTPStatus
 from zoneinfo import ZoneInfo
 
-from jwt import encode
+from fastapi import Depends, HTTPException
+from fastapi.security import OAuth2PasswordBearer
+from jwt import DecodeError, decode, encode
 from pwdlib import PasswordHash
+from sqlalchemy import select
+from sqlalchemy.orm import Session
+
+from fast_pr.models import Users
 
 SECRET_KEY = 'nothing'
 ALGORITHM = 'HS256'
@@ -33,3 +40,33 @@ def get_hash_password(password: str):
 def verify_password(plain_password: str, hashed_password: str):
     """login and compares with hashed password"""
     return pwd_context.verify(plain_password, hashed_password)
+
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl='token')
+
+
+def get_current_user(
+    session: Session = Depends, token: str = Depends(oauth2_scheme)
+):
+    credentials_exception = HTTPException(
+        status_code=HTTPStatus.UNAUTHORIZED,
+        detail='could not validate credentials',
+        headers={'WWW-Authenticate': 'Bearer'},
+    )
+
+    try:
+        payload = decode(token, SECRET_KEY, algorithms=['ES256'])
+        subject_email = payload.get('sub')
+
+        if not subject_email:
+            raise credentials_exception
+
+    except DecodeError:
+        raise credentials_exception
+
+    user = session.scalar(select(Users).where(Users.email == subject_email))
+
+    if not user:
+        raise credentials_exception
+
+    return user
