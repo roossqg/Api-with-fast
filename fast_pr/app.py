@@ -11,7 +11,7 @@ from fast_pr.database import get_session
 from fast_pr.models import Users
 from fast_pr.schemas import Mens, Token, Userlist, UserPublic, UserSchema
 from fast_pr.security import (
-    create_acess_token,
+    create_access_token,
     get_current_user,
     get_hash_password,
     verify_password,
@@ -140,13 +140,6 @@ def delete_users(
             status_code=HTTPStatus.FORBIDDEN, detail='Not Enough Permissions'
         )
 
-    db_user = session.scalar(select(Users).where(Users.id == user_id))
-
-    if not db_user:
-        raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND, detail='user not found'
-        )
-
     session.delete(current_user)
     session.commit()
 
@@ -196,6 +189,6 @@ def login_for_access_token(
             detail='Incorrect email or password',
         )
 
-    access_token = create_acess_token(data={'sub': user.email})
+    access_token = create_access_token(data={'sub': user.email})
 
     return {'access_token': access_token, 'token_type': 'bearer'}

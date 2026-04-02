@@ -21,7 +21,7 @@ pwd_context = PasswordHash.recommended()
 # transform hash
 
 
-def create_acess_token(data: dict):
+def create_access_token(data: dict):
     to_encode = data.copy()
     expire = datetime.now(tz=ZoneInfo('UTC')) + timedelta(
         minutes=ACESSS_TOKEN_EXPIRE_MINUTES
