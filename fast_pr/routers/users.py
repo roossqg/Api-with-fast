@@ -1,4 +1,5 @@
 from http import HTTPStatus
+from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
@@ -21,9 +22,12 @@ from fast_pr.security import (
 # use this app on users endpoints.this works on application funcionality
 router = APIRouter(prefix='/users', tags=['users'])
 
+SessionC = Annotated[Session, Depends(get_session)]
+CurrentUser = Annotated[Users, Depends(get_current_user)]
+
 
 @router.post('/', status_code=HTTPStatus.CREATED, response_model=UserPublic)
-def create_user(user: UserSchema, session: Session = Depends(get_session)):
+def create_user(user: UserSchema, session: SessionC):
 
     # logs with session
     db_user = session.scalar(
@@ -63,8 +67,11 @@ def create_user(user: UserSchema, session: Session = Depends(get_session)):
 
 @router.get('/', response_model=Userlist)
 def read_database(
-    skip: int = 0, limit: int = 100, session: Session = Depends(get_session)
+    session: SessionC,
+    skip: int = 0,
+    limit: int = 100,
 ):
+
     users = session.scalars(select(Users).offset(skip).limit(limit)).all()
     # orginal database
 
@@ -75,8 +82,8 @@ def read_database(
 def update_user(
     user_id: int,
     user: UserSchema,
-    session: Session = Depends(get_session),
-    current_user: Users = Depends(get_current_user),
+    session: SessionC,
+    current_user: CurrentUser,
 ):
     # user for modify
 
@@ -114,8 +121,8 @@ def update_user(
 @router.delete('/{user_id}', response_model=Mens)
 def delete_users(
     user_id: int,
-    session: Session = Depends(get_session),
-    current_user: Users = Depends(get_current_user),
+    session: SessionC,
+    current_user: CurrentUser,
 ):
 
     if current_user.id != user_id:
@@ -130,7 +137,7 @@ def delete_users(
 
 
 @router.get('/{user_id}', response_model=UserPublic)
-def get_user(user_id: int, session: Session = Depends(get_session)):
+def get_user(user_id: int, session: SessionC):
 
     db_user = session.scalar(select(Users).where(Users.id == user_id))
     # model return
