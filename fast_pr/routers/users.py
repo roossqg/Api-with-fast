@@ -23,7 +23,7 @@ router = APIRouter(prefix='/users', tags=['users'])
 
 
 @router.post('/', status_code=HTTPStatus.CREATED, response_model=UserPublic)
-def create_user(user: UserSchema, session: Session):
+def create_user(user: UserSchema, session: Session = Depends(get_session)):
 
     # logs with session
     db_user = session.scalar(
@@ -129,7 +129,7 @@ def delete_users(
     return {'message': 'user deleted'}
 
 
-@router.get('/{user_id`}', response_model=Mens)
+@router.get('/{user_id}', response_model=UserPublic)
 def get_user(user_id: int, session: Session = Depends(get_session)):
 
     db_user = session.scalar(select(Users).where(Users.id == user_id))

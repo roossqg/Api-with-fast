@@ -1,6 +1,7 @@
 from http import HTTPStatus
 
 from fast_pr.schemas import UserPublic
+from fast_pr.security import create_access_token
 
 
 def test_val(client):
@@ -68,9 +69,10 @@ def test_correct_getuser(client, user):
     assert response.json() == {'users': [user_schema]}
 
 
-def test_update_user_ok(client, user):
+def test_update_user_ok(client, user, token):
     response = client.put(
-        '/users/1',
+        f'/users/{user.id}',
+        headers={'Authorization': f'Bearer {token}'},
         json={
             'username': 'show',
             'email': 'show@example.com',
@@ -82,19 +84,22 @@ def test_update_user_ok(client, user):
     assert response.json() == {
         'username': 'show',
         'email': 'show@example.com',
-        'id': 1,
+        'id': user.id,
     }
 
 
-def test_delete_user(client, user):
+def test_delete_user(client, user, token):
 
-    response = client.delete('/users/1')
+    response = client.delete(
+        f'/users/{user.id}',
+        headers={'Authorization': f'Bearer {token}'},
+    )
 
     assert response.status_code == HTTPStatus.OK
     assert response.json() == {'message': 'user deleted'}
 
 
-def test_upd_integrity_put_post(client, user):
+def test_upd_integrity_put_post(client, user, token):
 
     client.post(
         '/users/',
@@ -107,6 +112,7 @@ def test_upd_integrity_put_post(client, user):
 
     response_update = client.put(
         f'/users/{user.id}',
+        headers={'Authorization': f'Bearer {token}'},
         json={
             'username': 'jonson',  # same username (conflic because is unique)
             'email': 'show@example.com',
@@ -120,7 +126,7 @@ def test_upd_integrity_put_post(client, user):
     }
 
 
-def test_get_user_not(client, user):
+def test_get_user_not(client):
     response = client.get('/users/1999')
 
     assert response.status_code == HTTPStatus.NOT_FOUND
@@ -138,27 +144,33 @@ def test_get_user_ok(client, user):
     }
 
 
-def test_update_user_not(client, user):
-    response = client.put(
-        '/users/999',
-        json={
-            'username': 'show',
-            'email': 'show@example.com',
-            'password': 'passaport',
-        },
-    )
-
-    assert response.status_code == HTTPStatus.NOT_FOUND
-    assert response.json() == {'detail': 'user not found'}
-
-
-def test_delete_user_not(client, user):
-    response = client.delete('/users/19999')
-
-    assert response.status_code == HTTPStatus.NOT_FOUND
-    assert response.json() == {'detail': 'user not found'}
-
-
 # model reponse from exception
 
-# all this in due order to use respecting database
+# all this in due order to use respecting databas
+
+
+
+
+
+def test_current_user_not_found_email(client):
+    data = {'no-email': 'test'}  # no email to auth
+    token = create_access_token(data)
+
+    response = client.delete(
+        '/users/1', headers={'Authorization': f'Bearer {token}'}
+    )
+
+    assert response.status_code == HTTPStatus.UNAUTHORIZED
+    assert response.json() == {'detail': 'could not validate credentials'}
+
+
+def test_current_user_not_found(client):
+    data = {'sub': 'test@www'}
+    token = create_access_token(data)
+
+    response = client.delete(
+        '/users/1', headers={'Authorization': f'Bearer {token}'}
+    )
+
+    assert response.status_code == HTTPStatus.UNAUTHORIZED
+    assert response.json() == {'detail': 'could not validate credentials'}

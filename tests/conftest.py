@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from fast_pr.app import app
 from fast_pr.database import get_session
 from fast_pr.models import Users, table_registry
+from fast_pr.security import get_hash_password
 
 
 @pytest.fixture
@@ -72,10 +73,28 @@ def mock_db():
 @pytest.fixture
 def user(session):
 
-    user = Users(username='bob', email='bob@example.com', password='boopass')
+    password = 'boopass'
+    user = Users(
+        username='bob',
+        email='bob@example.com',
+        password=get_hash_password(password),
+    )
 
     session.add(user)
     session.commit()
     session.refresh(user)
 
+    # object to verify:
+    user.clean_password = password
+
     return user
+
+
+@pytest.fixture
+def token(client, user):
+    response = client.post(
+        '/auth/token',
+        data={'username': user.email, 'password': user.clean_password},
+    )
+
+    return response.json()['access_token']

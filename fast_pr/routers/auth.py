@@ -15,11 +15,11 @@ router = APIRouter(prefix='/auth', tags=['auth'])
 
 OAuth2Form = Annotated[OAuth2PasswordRequestForm, Depends()]
 
-Ssession = Annotated[Session, Depends(get_session)]
+SessionB = Annotated[Session, Depends(get_session)]
 
 
 @router.post('/token', response_model=Token)
-def login_for_access_token(form_data: OAuth2Form, session: Ssession):
+def login_for_access_token(form_data: OAuth2Form, session: SessionB):
 
     user = session.scalar(
         select(Users).where(Users.email == form_data.username)
