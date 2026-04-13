@@ -1,19 +1,14 @@
 from http import HTTPStatus
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from fast_pr.database import get_session
 from fast_pr.models import Users
-from fast_pr.schemas import (
-    Mens,
-    Userlist,
-    UserPublic,
-    UserSchema,
-)
+from fast_pr.schemas import FilterPage, Mens, Userlist, UserPublic, UserSchema
 from fast_pr.security import (
     get_current_user,
     get_hash_password,
@@ -67,12 +62,12 @@ def create_user(user: UserSchema, session: SessionC):
 
 @router.get('/', response_model=Userlist)
 def read_database(
-    session: SessionC,
-    skip: int = 0,
-    limit: int = 100,
+    session: SessionC, filter_users: Annotated[FilterPage, Query()]
 ):
 
-    users = session.scalars(select(Users).offset(skip).limit(limit)).all()
+    users = session.scalars(
+        select(Users).offset(filter_users.offset).limit(filter_users.limit)
+    ).all()
     # orginal database
 
     return {'users': users}
