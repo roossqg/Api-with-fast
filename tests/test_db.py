@@ -1,20 +1,23 @@
 from dataclasses import asdict
 
+import pytest
 from sqlalchemy import select
 
 from fast_pr.models import Users
 
 
-def test_create_user(session, mock_db):
+@pytest.mark.asyncio
+async def test_create_user(session, mock_db):
     with mock_db(model=Users) as time:
         new_user = Users(
             username='Bob', password='as34ty', email='bob@example.com'
         )
         # send info to db
         session.add(new_user)
-        session.commit()
 
-    user = session.scalar(select(Users).where(Users.username == 'Bob'))
+        await session.commit()
+
+    user = await session.scalar(select(Users).where(Users.username == 'Bob'))
     # get and show data from db
 
     assert asdict(user) == {
