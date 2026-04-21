@@ -4,7 +4,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from fast_pr.database import get_session
 from fast_pr.models import Users
@@ -17,15 +17,15 @@ from fast_pr.security import (
 # use this app on users endpoints.this works on application funcionality
 router = APIRouter(prefix='/users', tags=['users'])
 
-SessionC = Annotated[Session, Depends(get_session)]
+SessionC = Annotated[AsyncSession, Depends(get_session)]
 CurrentUser = Annotated[Users, Depends(get_current_user)]
 
 
 @router.post('/', status_code=HTTPStatus.CREATED, response_model=UserPublic)
-def create_user(user: UserSchema, session: SessionC):
+async def create_user(user: UserSchema, session: SessionC):
 
     # logs with session
-    db_user = session.scalar(
+    db_user = await session.scalar(
         select(Users).where(
             (Users.username == user.username) | (Users.email == user.email)
         )
@@ -54,27 +54,29 @@ def create_user(user: UserSchema, session: SessionC):
     )
 
     session.add(db_user)
-    session.commit()
-    session.refresh(db_user)
+    await session.commit()
+    await session.refresh(db_user)
 
     return db_user
 
 
 @router.get('/', response_model=Userlist)
-def read_database(
+async def read_database(
     session: SessionC, filter_users: Annotated[FilterPage, Query()]
 ):
 
-    users = session.scalars(
+    query = await session.scalars(
         select(Users).offset(filter_users.offset).limit(filter_users.limit)
-    ).all()
+    )
+
+    users = query.all()
     # orginal database
 
     return {'users': users}
 
 
 @router.put('/{user_id}', response_model=UserPublic)
-def update_user(
+async def update_user(
     user_id: int,
     user: UserSchema,
     session: SessionC,
@@ -101,8 +103,9 @@ def update_user(
         current_user.email = user.email
         current_user.password = get_hash_password(user.password)
 
-        session.commit()  # no adds ,just modify atributes
-        session.refresh(current_user)  # -> gets User public format to return
+        await session.commit()  # no adds ,just modify atributes
+        await session.refresh(current_user)
+        # -> gets User public format to return
 
         return current_user
 
@@ -114,7 +117,7 @@ def update_user(
 
 
 @router.delete('/{user_id}', response_model=Mens)
-def delete_users(
+async def delete_users(
     user_id: int,
     session: SessionC,
     current_user: CurrentUser,
@@ -125,16 +128,16 @@ def delete_users(
             status_code=HTTPStatus.FORBIDDEN, detail='Not Enough Permissions'
         )
 
-    session.delete(current_user)
-    session.commit()
+    await session.delete(current_user)
+    await session.commit()
 
     return {'message': 'user deleted'}
 
 
 @router.get('/{user_id}', response_model=UserPublic)
-def get_user(user_id: int, session: SessionC):
+async def get_user(user_id: int, session: SessionC):
 
-    db_user = session.scalar(select(Users).where(Users.id == user_id))
+    db_user = await session.scalar(select(Users).where(Users.id == user_id))
     # model return
 
     if not db_user:
