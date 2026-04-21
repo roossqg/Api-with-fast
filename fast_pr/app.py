@@ -14,12 +14,12 @@ app.include_router(users.router)
 
 
 @app.get('/', status_code=HTTPStatus.OK, response_model=Mens)
-def root():
+async def root():
     return {'message': 'hello'}
 
 
 @app.get('/ht_res', response_class=HTMLResponse, status_code=200)
-def hello1_htm():
+async def hello1_htm():
     return """
     <html>
         <head>
