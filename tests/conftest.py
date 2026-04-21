@@ -77,8 +77,8 @@ def mock_db():
     return _mockdb_in_time
 
 
-@pytest.fixture
-def user(session):
+@pytest_asyncio.fixture
+async def user(session):
 
     password = 'boopass'
     user = Users(
@@ -88,8 +88,8 @@ def user(session):
     )
 
     session.add(user)
-    session.commit()
-    session.refresh(user)
+    await session.commit()
+    await session.refresh(user)
 
     # object to verify:
     user.clean_password = password
