@@ -182,8 +182,7 @@ def test_update_user_wrong_data(client, other_user, token):
 
 def test_deleter_wrong_data(client, other_user, token):
     response = client.delete(
-        f'/users/{other_user.id}',
-        headers={'Authorization': f'Bearer {token}'}
+        f'/users/{other_user.id}', headers={'Authorization': f'Bearer {token}'}
     )
 
     assert response.status_code == HTTPStatus.FORBIDDEN
