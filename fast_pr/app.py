@@ -3,7 +3,7 @@ from http import HTTPStatus
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 
-from fast_pr.routers import auth, users
+from fast_pr.routers import auth, users, to_do
 from fast_pr.schemas import Mens
 
 app = FastAPI()
@@ -11,6 +11,7 @@ app = FastAPI()
 # applications plugin:
 app.include_router(auth.router)
 app.include_router(users.router)
+app.include_router(to_do.router)
 
 
 @app.get('/', status_code=HTTPStatus.OK, response_model=Mens)

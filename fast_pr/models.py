@@ -1,9 +1,20 @@
 from datetime import datetime
+from enum import Enum
 
-from sqlalchemy import func
-from sqlalchemy.orm import Mapped, mapped_as_dataclass, mapped_column, registry
+from sqlalchemy import func,ForeignKey
+from sqlalchemy.orm import (Mapped, mapped_as_dataclass, mapped_column, 
+registry,relationship)
+
 
 table_registry = registry()
+
+
+class Todostate(str,Enum):
+    draft = 'draft',
+    todo = 'todo',
+    doing = 'doing',
+    done = 'done',
+    trash = 'trash'
 
 
 @mapped_as_dataclass(table_registry)  # get metadata with orm
@@ -21,4 +32,23 @@ class Users:
         init=False, server_default=func.now(), onupdate=func.now()
     )
 
+
+    todos: Mapped[list['Todo']] = relationship(
+        init=False,
+        cascade='all,delete-orphan',
+        lazy='selectin'
+    )
+
     # init : increment
+
+@mapped_as_dataclass(table_registry)
+class Todo:
+    __tablename__ = "todos"
+
+
+    id : Mapped[int] = mapped_column(init=False,primary_key=True)
+    title: Mapped[str]
+    description: Mapped[str]
+    status: Mapped[Todostate]
+
+    user_id = Mapped[int] = mapped_column(ForeignKey('user.id'))
