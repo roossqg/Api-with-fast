@@ -3,7 +3,7 @@ from http import HTTPStatus
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 
-from fast_pr.routers import auth, users, to_do
+from fast_pr.routers import auth, to_do, users
 from fast_pr.schemas import Mens
 
 app = FastAPI()

@@ -3,7 +3,7 @@ from dataclasses import asdict
 import pytest
 from sqlalchemy import select
 
-from fast_pr.models import Users
+from fast_pr.models import Todo, Users
 
 
 @pytest.mark.asyncio
@@ -27,6 +27,33 @@ async def test_create_user(session, mock_db):
         'email': 'bob@example.com',
         'creation': time,
         'last_update': time,
+        'todos': [],
     }
 
     # --> verify structure in db
+
+
+@pytest.mark.asyncio
+async def test_create_todo(session, user):
+
+    todo = Todo(
+        title='Test Todo',
+        description='Test Desc',
+        status='draft',
+        user_id=user.id,
+    )
+
+    # add todo in db
+    session.add(todo)
+    await session.commit()
+
+    # access todo in db
+    todo = await session.scalar(select(Todo))
+
+    assert asdict(todo) == {
+        'description': 'Test Desc',
+        'title': 'Test Todo',
+        'status': 'draft',
+        'id': 1,
+        'user_id': 1,
+    }
