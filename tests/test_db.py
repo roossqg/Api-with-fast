@@ -57,3 +57,22 @@ async def test_create_todo(session, user):
         'id': 1,
         'user_id': 1,
     }
+
+
+@pytest.mark.asyncio
+async def test_user_todo_relationship(session, user: Users):
+
+    todo = Todo(
+        title='Test Todo',
+        description='Test Desc',
+        status='draft',
+        user_id=user.id,
+    )
+
+    session.add(todo)
+    await session.commit()
+    await session.refresh(user)
+
+    user = await session.scalar(select(Users).where(Users.id == user.id))
+
+    assert user.todos == [todo]
