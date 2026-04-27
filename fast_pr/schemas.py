@@ -2,6 +2,8 @@ from typing import Annotated
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
+from fast_pr.models import Todostate
+
 
 class Mens(BaseModel):
     message: str  # structure of an Data on App
@@ -37,3 +39,27 @@ class Token(BaseModel):
 class FilterPage(BaseModel):
     offset: Annotated[int, Field(0, ge=0)]
     limit: Annotated[int, Field(100, ge=1)]
+
+
+# task
+class TodoSchema(BaseModel):
+    title: str
+    description: str
+    status: Todostate
+
+
+# order
+class TodoPublic(TodoSchema):
+    id: int
+
+
+# task list
+class TodoList(BaseModel):
+    todos: list[TodoPublic]
+
+
+#order-filter
+class FilterTodo(FilterPage):
+    title : str | None = Field(None,min_lengh=3,max_lengh=20)
+    description: str | None = Field(None,min_lengh=3,max_lengh=20)
+    status: Todostate | None = None
