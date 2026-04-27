@@ -42,10 +42,11 @@ async def test_list_todos_return_all(client, user, session, token):
     await session.commit()
 
     response = client.get(
-        '/todos/',
+        '/to-do/',
         headers={'Authorization': f'Bearer {token}'},
     )
 
+    print('json =', response.json())
 
     # todos orm object
     assert len(response.json()['todos']) == expected_todos
@@ -59,7 +60,7 @@ async def test_pagination_todos(client, user, session, token):
     await session.commit()
 
     response = client.get(
-        '/todos/?offset=1&limit=3',
+        '/to-do/?offset=1&limit=3',
         headers={'Authorization': f'Bearer {token}'},
     )
 
@@ -78,7 +79,7 @@ async def test_list_todos_filter_title(client, user, token, session):
     await session.commit()
 
     response = client.get(
-        '/todos/?title= Test Todolist title',
+        '/to-do/?title=Test Todolist title',
         headers={'Authorization': f'Bearer {token}'},
     )
 
@@ -98,7 +99,7 @@ async def test_list_todos_filter_description(client, user, session, token):
     await session.commit()
 
     response = client.get(
-        '/todos/?description= Test Todolist Desc',
+        '/to-do/?description= Test Todolist Desc',
         headers={'Authorization': f'Bearer {token}'},
     )
 
@@ -116,7 +117,7 @@ async def test_list_todos_filter_status(client, user, session, token):
     await session.commit()
 
     response = client.get(
-        '/todos/?status=draft', headers={'Authorization': f'Bearer {token}'}
+        '/to-do/?status=draft', headers={'Authorization': f'Bearer {token}'}
     )
 
     assert len(response.json()['todos']) == expected_todos
@@ -149,7 +150,7 @@ async def test_list_todos_filter_all_features(client, user, session, token):
     await session.commit()
 
     response = client.get(
-        '/todos/?title=all fields B&status=draft&description=all fields A',
+        '/to-do/?title=all fields B&status=draft&description=all fields A',
         headers={'Authorization': f'Bearer {token}'},
     )
 
