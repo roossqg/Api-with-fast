@@ -1,16 +1,17 @@
 import factory.fuzzy
-from fast_pr.models import Todo,Todostate
-
 import pytest
 
-#create todos data
+from fast_pr.models import Todo, Todostate
+
+
+# create todos data
 class TodoFactory(factory.Factory):
     class Meta:
         model = Todo
 
     title = factory.Faker('text')
     description = factory.Faker('text')
-    status= factory.fuzzy.FuzzyChoice(Todostate)
+    status = factory.fuzzy.FuzzyChoice(Todostate)
 
 
 def test_create_todos(client, token):
@@ -32,3 +33,124 @@ def test_create_todos(client, token):
     }
 
 
+@pytest.mark.asyncio
+async def test_list_todos_return_all(client, user, session, token):
+    expected_todos = 5
+    # create todo with 5 atributes with user id
+    session.add_all(TodoFactory.create_batch(5, user_id=user.id))
+
+    await session.commit()
+
+    response = client.get(
+        '/todos/',
+        headers={'Authorization': f'Bearer {token}'},
+    )
+
+
+    # todos orm object
+    assert len(response.json()['todos']) == expected_todos
+
+
+@pytest.mark.asyncio
+async def test_pagination_todos(client, user, session, token):
+    expected_todos = 3
+    session.add_all(TodoFactory.create_batch(5, user_id=user.id))
+
+    await session.commit()
+
+    response = client.get(
+        '/todos/?offset=1&limit=3',
+        headers={'Authorization': f'Bearer {token}'},
+    )
+
+    assert len(response.json()['todos']) == expected_todos
+
+
+@pytest.mark.asyncio
+async def test_list_todos_filter_title(client, user, token, session):
+    expected_todos = 5
+    session.add_all(
+        TodoFactory.create_batch(
+            5, user_id=user.id, title='Test Todolist title'
+        ),
+    )
+
+    await session.commit()
+
+    response = client.get(
+        '/todos/?title= Test Todolist title',
+        headers={'Authorization': f'Bearer {token}'},
+    )
+
+    assert len(response.json()['todos']) == expected_todos
+
+
+@pytest.mark.asyncio
+async def test_list_todos_filter_description(client, user, session, token):
+
+    expected_todos = 5
+    session.add_all(
+        TodoFactory.create_batch(
+            5, user_id=user.id, description='Test Todolist Desc'
+        )
+    )
+
+    await session.commit()
+
+    response = client.get(
+        '/todos/?description= Test Todolist Desc',
+        headers={'Authorization': f'Bearer {token}'},
+    )
+
+    assert len(response.json()['todos']) == expected_todos
+
+
+@pytest.mark.asyncio
+async def test_list_todos_filter_status(client, user, session, token):
+
+    expected_todos = 5
+    session.add_all(
+        TodoFactory.create_batch(5, user_id=user.id, status=Todostate.draft)
+    )
+
+    await session.commit()
+
+    response = client.get(
+        '/todos/?status=draft', headers={'Authorization': f'Bearer {token}'}
+    )
+
+    assert len(response.json()['todos']) == expected_todos
+
+
+@pytest.mark.asyncio
+async def test_list_todos_filter_all_features(client, user, session, token):
+
+    expected_todos = 5
+    session.add_all(
+        TodoFactory.create_batch(
+            5,
+            user_id=user.id,
+            title='all fields',
+            description='all fields A',
+            status=Todostate.draft,
+        ),
+    )
+
+    session.add_all(
+        TodoFactory.create_batch(
+            3,
+            user_id=user.id,
+            title='other Tests all fields B',
+            description='other Tests all fields A',
+            status=Todostate.done,
+        ),
+    )
+
+    await session.commit()
+
+    response = client.get(
+        '/todos/?title=all fields B&status=draft&description=all fields A',
+        headers={'Authorization': f'Bearer {token}'},
+    )
+
+    assert len(response.json()['todos']) == expected_todos
