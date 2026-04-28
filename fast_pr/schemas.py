@@ -63,3 +63,10 @@ class FilterTodo(FilterPage):
     title: str | None = Field(None, min_lengh=3, max_lengh=20)
     description: str | None = Field(None, min_lengh=3, max_lengh=20)
     status: Todostate | None = None
+
+
+# update todo
+class TodoUpdate(BaseModel):
+    title: str | None = None
+    description: str | None = None
+    status: Todostate | None = None
