@@ -98,7 +98,7 @@ async def update_todo(
     return db_todo
 
 
-@router.delete('/{todo.id}', response_model=Mens)
+@router.delete('/{todo_id}', response_model=Mens)
 async def todo_delete(user: CurrentUserB, session: SessionB, todo_id: int):
 
     # acess todo for del:
