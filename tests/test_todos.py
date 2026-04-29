@@ -16,22 +16,27 @@ class TodoFactory(factory.Factory):
     status = factory.fuzzy.FuzzyChoice(Todostate)
 
 
-def test_create_todos(client, token):
-    response = client.post(
-        '/to-do/',
-        headers={'Authorization': f'Bearer {token}'},
-        json={
-            'title': 'test Todo title',
-            'description': 'test Todo Desc',
-            'status': 'draft',
-        },
-    )
+def test_create_todos(client, token, mock_db_time):
+    # access db to alter time
+    with mock_db_time(model=Todo) as time:
+        response = client.post(
+            '/to-do/',
+            headers={'Authorization': f'Bearer {token}'},
+            json={
+                'title': 'test Todo title',
+                'description': 'test Todo Desc',
+                'status': 'draft',
+            },
+        )
 
+    # return,user public and schema
     assert response.json() == {
         'id': 1,
         'title': 'test Todo title',
         'description': 'test Todo Desc',
         'status': 'draft',
+        'created_at': time.isoformat(),
+        'upgrated_at': time.isoformat(),
     }
 
 
@@ -125,37 +130,36 @@ async def test_list_todos_filter_status(client, user, session, token):
 
 
 @pytest.mark.asyncio
-async def test_list_todos_filter_all_features(client, user, session, token):
+async def test_list_todos_filter_all_features(
+    client, user, session, token, mockdb_in_time
+):
 
-    expected_todos = 5
-    session.add_all(
-        TodoFactory.create_batch(
-            5,
-            user_id=user.id,
-            title='all fields',
-            description='all fields A',
-            status=Todostate.draft,
-        ),
-    )
+    # access db
+    with mockdb_in_time(model=Todo) as time:
+        todo = TodoFactory.create(user_id=user.id)
 
-    session.add_all(
-        TodoFactory.create_batch(
-            3,
-            user_id=user.id,
-            title='other Tests all fields B',
-            description='other Tests all fields A',
-            status=Todostate.done,
-        ),
-    )
+        # proccess
+        session.add(todo)
+        await session.commit()
 
-    await session.commit()
+    # get users
+    await session.refresh(todo)
 
     response = client.get(
-        '/to-do/?title=all fields&status=draft&description=all fields A',
+        '/to-do/',
         headers={'Authorization': f'Bearer {token}'},
     )
 
-    assert len(response.json()['todos']) == expected_todos
+    assert response.json()['todos'] == [
+        {
+            'created_at': time.isoformat(),
+            'updated_at': time.isoformat(),
+            'id': todo.id,
+            'description': todo.description,
+            'title': todo.title,
+            'status': todo.status,
+        }
+    ]
 
 
 @pytest.mark.asyncio

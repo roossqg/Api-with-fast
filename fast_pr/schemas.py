@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Annotated
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
@@ -48,9 +49,11 @@ class TodoSchema(BaseModel):
     status: Todostate
 
 
-# order
+# order-return
 class TodoPublic(TodoSchema):
     id: int
+    created_at: datetime
+    updated_at: datetime
 
 
 # task list

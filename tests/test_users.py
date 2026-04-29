@@ -91,22 +91,14 @@ def test_delete_user(client, user, token):
     assert response.json() == {'message': 'user deleted'}
 
 
-def test_upd_integrity_put_post(client, user, token):
-
-    client.post(
-        '/users/',
-        json={
-            'username': 'jonson',
-            'email': 'jonson@example.com',
-            'password': 'jsd5',
-        },
-    )
+def test_upd_integrity_put_post(client, user, other_user, token):
 
     response_update = client.put(
         f'/users/{user.id}',
         headers={'Authorization': f'Bearer {token}'},
         json={
-            'username': 'jonson',  # same username (conflic because is unique)
+            'username': other_user.username,
+            # same username (conflic because is unique)
             'email': 'show@example.com',
             'password': 'passaport',
         },
