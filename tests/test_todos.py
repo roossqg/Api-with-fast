@@ -1,7 +1,9 @@
+from dataclasses import asdict
 from http import HTTPStatus
 
 import factory.fuzzy
 import pytest
+from sqlalchemy import select
 
 from fast_pr.models import Todo, Todostate
 
@@ -16,9 +18,9 @@ class TodoFactory(factory.Factory):
     status = factory.fuzzy.FuzzyChoice(Todostate)
 
 
-def test_create_todos(client, token, mock_db_time):
+def test_create_todos(client, token, mock_db):
     # access db to alter time
-    with mock_db_time(model=Todo) as time:
+    with mock_db(model=Todo) as time:
         response = client.post(
             '/to-do/',
             headers={'Authorization': f'Bearer {token}'},
@@ -36,7 +38,7 @@ def test_create_todos(client, token, mock_db_time):
         'description': 'test Todo Desc',
         'status': 'draft',
         'created_at': time.isoformat(),
-        'upgrated_at': time.isoformat(),
+        'updated_at': time.isoformat(),
     }
 
 
@@ -213,3 +215,29 @@ def test_todo_delete_error(token, client):
 
     assert response.status_code == HTTPStatus.NOT_FOUND
     assert response.json() == {'detail': 'todo not found'}
+
+
+@pytest.mark.asyncio
+async def test_create_todo(session, user):
+
+    todo = Todo(
+        title='Test Todo',
+        description='Test Desc',
+        status='draft',
+        user_id=user.id,
+    )
+
+    # add todo in db
+    session.add(todo)
+    await session.commit()
+
+    # access todo in db
+    todo = await session.scalar(select(Todo))
+
+    assert asdict(todo) == {
+        'description': 'Test Desc',
+        'title': 'Test Todo',
+        'status': 'draft',
+        'id': 1,
+        'user_id': 1,
+    }
