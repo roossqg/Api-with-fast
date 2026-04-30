@@ -71,6 +71,12 @@ def _mockdb_in_time(*, model, time=datetime(2025, 1, 1)):
         if hasattr(target, 'creation'):  # verify if object has taget atibute
             target.creation = time
 
+        if hasattr(target, 'created_at'):
+            target.created_at = time
+
+        if hasattr(target, 'updated_at'):
+            target.updated_at = time
+
         if hasattr(target, 'last_update'):
             target.last_update = time
             # each model atr traks its value with time

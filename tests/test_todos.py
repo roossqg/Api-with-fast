@@ -1,11 +1,10 @@
-from dataclasses import asdict
 from http import HTTPStatus
 
 import factory.fuzzy
 import pytest
 from sqlalchemy import select
 
-from fast_pr.models import Todo, Todostate
+from fast_pr.models import Todo, Todostate, Users
 
 
 # create todos data
@@ -78,6 +77,7 @@ async def test_pagination_todos(client, user, session, token):
 async def test_list_todos_filter_title(client, user, token, session):
     expected_todos = 5
 
+    # direct in db
     session.add_all(
         TodoFactory.create_batch(
             5, user_id=user.id, title='Test Todolist title'
@@ -86,12 +86,57 @@ async def test_list_todos_filter_title(client, user, token, session):
 
     await session.commit()
 
+    # search per title
     response = client.get(
         '/to-do/?title=Test Todolist title',
         headers={'Authorization': f'Bearer {token}'},
     )
 
     assert len(response.json()['todos']) == expected_todos
+
+
+def test_big_title(token, client):
+    big_t = 's' * 21
+
+    response = client.get(
+        f'/to-do/?title={big_t}',
+        headers={'Authorization': f'Bearer {token}'},
+    )
+
+    assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
+
+
+def test_small_title(token, client):
+    small_t = 's'
+
+    response = client.get(
+        f'/to-do/?title={small_t}',
+        headers={'Authorization': f'Bearer {token}'},
+    )
+
+    assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
+
+
+def test_small_description(token, client):
+    small_d = 'a'
+
+    response = client.get(
+        f'/to-do/?description={small_d}',
+        headers={'Authorization': f'Bearer {token}'},
+    )
+
+    assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
+
+
+def test_big_description(token, client):
+    big_d = 's' * 21
+
+    response = client.get(
+        f'/to-do/?title={big_d}',
+        headers={'Authorization': f'Bearer {token}'},
+    )
+
+    assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
 
 
 @pytest.mark.asyncio
@@ -133,11 +178,11 @@ async def test_list_todos_filter_status(client, user, session, token):
 
 @pytest.mark.asyncio
 async def test_list_todos_filter_all_features(
-    client, user, session, token, mockdb_in_time
+    client, user, session, token, mock_db
 ):
 
     # access db
-    with mockdb_in_time(model=Todo) as time:
+    with mock_db(model=Todo) as time:
         todo = TodoFactory.create(user_id=user.id)
 
         # proccess
@@ -218,26 +263,47 @@ def test_todo_delete_error(token, client):
 
 
 @pytest.mark.asyncio
-async def test_create_todo(session, user):
+async def test_todos_all_fields(user, client, session, token, mock_db):
+    # creating user in db
+    with mock_db(model=Todo) as time:
+        todo = TodoFactory(user_id=user.id)
 
+        session.add(todo)
+        await session.commit()
+
+    # await for access that user
+    await session.refresh(todo)
+
+    response = client.get(
+        '/to-do/',
+        headers={'Authorization': f'Bearer {token}'},
+    )
+    # fields of user:
+    assert response.json()['todos'] == [
+        {
+            'title': todo.title,
+            'description': todo.description,
+            'status': todo.status,
+            'id': todo.id,
+            'created_at': time.isoformat(),
+            'updated_at': time.isoformat(),
+        }
+    ]
+
+
+@pytest.mark.asyncio
+async def test_lookup(session, user: Users):
     todo = Todo(
-        title='Test Todo',
-        description='Test Desc',
-        status='draft',
+        title='test todo',
+        description='test todo desc',
+        status='nothing',
         user_id=user.id,
     )
 
-    # add todo in db
     session.add(todo)
     await session.commit()
 
-    # access todo in db
-    todo = await session.scalar(select(Todo))
+    # not refresh because is not allowed
 
-    assert asdict(todo) == {
-        'description': 'Test Desc',
-        'title': 'Test Todo',
-        'status': 'draft',
-        'id': 1,
-        'user_id': 1,
-    }
+    with pytest.raises(LookupError):
+        await session.scalar(select(Todo))

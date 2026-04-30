@@ -63,8 +63,8 @@ class TodoList(BaseModel):
 
 # order-filter
 class FilterTodo(FilterPage):
-    title: str | None = Field(None, min_lengh=3, max_lengh=20)
-    description: str | None = Field(None, min_lengh=3, max_lengh=20)
+    title: str | None = Field(None, min_length=3, max_length=20)
+    description: str | None = Field(None, min_length=3, max_length=20)
     status: Todostate | None = None
 
 
