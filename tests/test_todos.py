@@ -209,6 +209,7 @@ async def test_list_todos_filter_all_features(
     ]
 
 
+# ---update task
 @pytest.mark.asyncio
 async def test_todo_patch(user, session, token, client):
     todo = TodoFactory(user_id=user.id)
@@ -262,6 +263,7 @@ def test_todo_delete_error(token, client):
     assert response.json() == {'detail': 'todo not found'}
 
 
+# ---task format
 @pytest.mark.asyncio
 async def test_todos_all_fields(user, client, session, token, mock_db):
     # creating user in db
