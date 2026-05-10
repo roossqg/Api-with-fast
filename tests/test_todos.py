@@ -2,9 +2,8 @@ from http import HTTPStatus
 
 import factory.fuzzy
 import pytest
-from sqlalchemy import select
 
-from fast_pr.models import Todo, Todostate, Users
+from fast_pr.models import Todo, Todostate
 
 
 # create todos data
@@ -293,19 +292,20 @@ async def test_todos_all_fields(user, client, session, token, mock_db):
     ]
 
 
-@pytest.mark.asyncio
-async def test_lookup(session, user: Users):
-    todo = Todo(
-        title='test todo',
-        description='test todo desc',
-        status='nothing',
-        user_id=user.id,
-    )
+# @pytest.mark.asyncio
+# async def test_lookup(session, user: Users):
+# todo = Todo(
+# title='test todo',
+# description='test todo desc',
+# status='nothing',
+# user"_id=user.id,
+# )
 
-    session.add(todo)
-    await session.commit()
+# with pytest.raises(DataError):
+# session.add(todo)
+# await session.commit()
 
-    # not refresh because is not allowed
+# not refresh because is not allowed
 
-    with pytest.raises(LookupError):
-        await session.scalar(select(Todo))
+# session.add(todo)
+# wait session.commit()

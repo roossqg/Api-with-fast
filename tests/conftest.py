@@ -5,8 +5,9 @@ import factory
 import pytest
 import pytest_asyncio
 from fastapi.testclient import TestClient
-from sqlalchemy import StaticPool, event
+from sqlalchemy import event
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from testcontainers.postgres import PostgresContainer
 
 from fast_pr.app import app
 from fast_pr.database import get_session
@@ -39,28 +40,29 @@ def client(session):
 async def session():
     # sql object out of metadata
 
-    engine = create_async_engine(
-        'sqlite+aiosqlite:///:memory:',
-        poolclass=StaticPool,
-        connect_args={'check_same_thread': False},
-        # use same tread-connection,same comunnication channel
-    )
+    # engine = create_async_engine(
+    # 'sqlite+aiosqlite:///:memory:',
+    # poolclass=StaticPool,
+    # connect_args={'check_same_thread': False},
+    # use same tread-connection,same comunnication channel
+    with PostgresContainer(image='postgres:16', driver='psycopg') as postgres:
+        engine = create_async_engine(postgres.get_connection_url)
 
-    async with engine.begin() as conn:
-        await conn.run_sync(table_registry.metadata.create_all)
+        async with engine.begin() as conn:
+            await conn.run_sync(table_registry.metadata.create_all)
 
-    # table_registry.metadata.create_all(engine)
-    # --> uses sqlite base to create a map of database in metadata
+        # table_registry.metadata.create_all(engine)
+        # --> uses sqlite base to create a map of database in metadata
 
-    async with AsyncSession(engine, expire_on_commit=False) as session:
-        # log on metadata
-        yield session
+        async with AsyncSession(engine, expire_on_commit=False) as session:
+            # log on metadata
+            yield session
 
-    async with engine.begin() as conn:
-        await conn.run_sync(table_registry.metadata.drop_all)
+        async with engine.begin() as conn:
+            await conn.run_sync(table_registry.metadata.drop_all)
 
-    # --> exit from base of database after session
-    engine.dispose()
+        # --> exit from base of database after session
+        engine.dispose()
 
 
 @contextmanager

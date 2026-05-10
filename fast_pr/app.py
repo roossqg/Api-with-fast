@@ -1,3 +1,5 @@
+import asyncio
+import sys
 from http import HTTPStatus
 
 from fastapi import FastAPI
@@ -5,6 +7,9 @@ from fastapi.responses import HTMLResponse
 
 from fast_pr.routers import auth, to_do, users
 from fast_pr.schemas import Mens
+
+if sys.platform == 'win32':
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 app = FastAPI()
 

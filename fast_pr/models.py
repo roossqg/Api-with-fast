@@ -1,6 +1,8 @@
 from datetime import datetime
 from enum import Enum
 
+# sqlalchemy validade postgresql status
+from sqlalchemy import Enum as SaEnum
 from sqlalchemy import ForeignKey, func
 from sqlalchemy.orm import (
     Mapped,
@@ -51,7 +53,8 @@ class Todo:
     id: Mapped[int] = mapped_column(init=False, primary_key=True)
     title: Mapped[str]
     description: Mapped[str]
-    status: Mapped[Todostate]
+    status: Mapped[Todostate] = mapped_column(SaEnum(Todostate))
+    # convert to postgresql
     user_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
 
     user: Mapped[Users] = relationship(init=False, back_populates='todos')

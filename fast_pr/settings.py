@@ -7,7 +7,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 # class with server-api configured
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file='.env', env_file_encoding='utf-8'
+        env_file='.env', env_file_encoding='utf-8', extra='ignore'
     )  # link database
 
     DATABASE_URL: Annotated[str, Field(init=False)]  # db object format
