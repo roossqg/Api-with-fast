@@ -26,12 +26,12 @@ jobs:
         with:
             python-version: '3.13'
 
-      - name: install deps
-        run: poetry install
 
       - name: install poetry
         run: pipx install poetry
 
+      - name: install deps
+        run: poetry install
 
       - name: run tests
         run: poetry run task test
