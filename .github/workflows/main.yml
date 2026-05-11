@@ -18,9 +18,19 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: get repository resources
+        uses: actions/checkout@v5
+
       - name: install python
         uses: actions/setup-python@v6
         with:
             python-version: '3.13'
+
+      - name: install poetry
+        uses: pipx install poetry
+
+
+      - name: run tests
+        uses: poetry run task test
         
       
