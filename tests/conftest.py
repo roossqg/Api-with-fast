@@ -36,8 +36,15 @@ def client(session):
     app.dependency_overrides.clear()
 
 
+@pytest.fixture(scope='session')
+def engine():
+    with PostgresContainer('postgres:16', driver='psycopg') as postgres:
+        _engine = create_async_engine(postgres.get_connection_url())
+        yield _engine
+
+
 @pytest_asyncio.fixture
-async def session():
+async def session(engine):
     # sql object out of metadata
 
     # engine = create_async_engine(
@@ -45,24 +52,22 @@ async def session():
     # poolclass=StaticPool,
     # connect_args={'check_same_thread': False},
     # use same tread-connection,same comunnication channel
-    with PostgresContainer(image='postgres:16', driver='psycopg') as postgres:
-        engine = create_async_engine(postgres.get_connection_url)
 
-        async with engine.begin() as conn:
-            await conn.run_sync(table_registry.metadata.create_all)
+    async with engine.begin() as conn:
+        await conn.run_sync(table_registry.metadata.create_all)
 
-        # table_registry.metadata.create_all(engine)
-        # --> uses sqlite base to create a map of database in metadata
+    # table_registry.metadata.create_all(engine)
+    # --> uses sqlite base to create a map of database in metadata
 
-        async with AsyncSession(engine, expire_on_commit=False) as session:
-            # log on metadata
-            yield session
+    async with AsyncSession(engine, expire_on_commit=False) as session:
+        # log on metadata
+        yield session
 
-        async with engine.begin() as conn:
-            await conn.run_sync(table_registry.metadata.drop_all)
+    async with engine.begin() as conn:
+        await conn.run_sync(table_registry.metadata.drop_all)
 
-        # --> exit from base of database after session
-        engine.dispose()
+    # --> exit from base of database after session
+    engine.dispose()
 
 
 @contextmanager
