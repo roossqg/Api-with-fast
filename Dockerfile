@@ -4,10 +4,11 @@ ENV POETRY_VIRTUALENVS_CREATE=false
 WORKDIR /fast_pr/app/
 COPY . .
 
-RUN pip install poetry 
+RUN pip install --no-cache-dir poetry
 
-RUN poetry config installer.max-workers 10 
+COPY pyproject.toml poetry.lock ./
+
 RUN poetry install --no-interaction --no-ansi --without dev
 
-EXPOSE 8000
+EXPOSE 10000
 CMD  ["sh", "-c", "poetry run alembic upgrade head && poetry run uvicorn fast_pr.app:app --host 0.0.0.0 --port $PORT"]
