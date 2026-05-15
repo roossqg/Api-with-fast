@@ -10,4 +10,4 @@ RUN poetry config installer.max-workers 10
 RUN poetry install --no-interaction --no-ansi --without dev
 
 EXPOSE 8000
-CMD poetry run uvicorn --host 0.0.0.0 fast_pr.app:app
+CMD  ["sh", "-c", "poetry run alembic upgrade head && poetry run uvicorn fast_pr.app:app --host 0.0.0.0 --port $PORT"]

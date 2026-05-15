@@ -12,7 +12,7 @@ _status_ consists in four states that you can set you task in create/upgrade.
 There's no limit of task creation. 
 
 
-## Techs/Arquiteture
+## Techs  (icons)
 - Fastapi: Python backend api structure
     - Sqlalchemy: Python database interations
     - Postgresql: robust database
@@ -31,6 +31,9 @@ There's no limit of task creation.
 - Enviroitment
     Poetry: install dependencies
 
+### Arquiteture (tree+docs print)
+
+
 ### Variables
 #### User:
 - DATABASE_URL: user info and task storage address
@@ -43,4 +46,6 @@ There's no limit of task creation.
 - POSTGRES_DB
 - POSTGRES_PASSWORD
 
-## How Use/Examples
+## How Use/Examples (install+init+use/example sucess)
+
++app rotation fluxogram
