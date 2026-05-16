@@ -12,7 +12,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from fast_pr.database import get_session
 from fast_pr.models import Users
-from fast_pr.settings import settings
 
 SECRET_KEY = os.getenv('SECRET_KEY')
 ALGORITHM = os.getenv('ALGORITHM')
@@ -26,12 +25,12 @@ pwd_context = PasswordHash.recommended()
 def create_access_token(data: dict):
     to_encode = data.copy()
     expire = datetime.now(tz=ZoneInfo('UTC')) + timedelta(
-        minutes=settings.ACESSS_TOKEN_EXPIRE_MINUTES
+        minutes=os.getenv('ACESSS_TOKEN_EXPIRE_MINUTES')
     )
 
     to_encode.update({'exp': expire})
     encoded_jwt = encode(
-        to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM
+        to_encode, os.getenv('SECRET_KEY'), algorithm=os.getenv('ALGORITHM')
     )
 
     return encoded_jwt
@@ -64,7 +63,7 @@ async def get_current_user(
 
     try:
         payload = decode(
-            token, settings.SECRET_KEY, algorithms=settings.ALGORITHM
+            token, os.getenv(SECRET_KEY), algorithms=os.getenv('ALGORITHM')
         )
         subject_email = payload.get('sub')
 

@@ -22,9 +22,9 @@ if sys.platform == 'win32':
 
 config = context.config
 
-url = os.getenv('DATABASE_URL')
 
-config.set_main_option('sqlalchemy.url',url) 
+config.set_main_option('sqlalchemy.url',
+                    os.getenv('DATABASE_URL')) 
 # get metadata object
 
 
