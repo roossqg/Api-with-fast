@@ -25,12 +25,12 @@ pwd_context = PasswordHash.recommended()
 def create_access_token(data: dict):
     to_encode = data.copy()
     expire = datetime.now(tz=ZoneInfo('UTC')) + timedelta(
-        minutes=os.getenv('ACESSS_TOKEN_EXPIRE_MINUTES')
+        minutes=ACESSS_TOKEN_EXPIRE_MINUTES
     )
 
     to_encode.update({'exp': expire})
     encoded_jwt = encode(
-        to_encode, os.getenv('SECRET_KEY'), algorithm=os.getenv('ALGORITHM')
+        to_encode, SECRET_KEY, algorithm=ALGORITHM
     )
 
     return encoded_jwt
@@ -63,7 +63,7 @@ async def get_current_user(
 
     try:
         payload = decode(
-            token, os.getenv(SECRET_KEY), algorithms=os.getenv('ALGORITHM')
+            token, SECRET_KEY, algorithms=ALGORITHM
         )
         subject_email = payload.get('sub')
 
