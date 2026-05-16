@@ -9,7 +9,7 @@ after create a login,you can create a task with the structure:
 
 _status_ consists in four states that you can set you task in create/upgrade. 
 
-There's no limit of task creation. 
+There's no limit o task creation. 
 
 
 ## Techs  (icons)
