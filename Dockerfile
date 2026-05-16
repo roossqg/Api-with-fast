@@ -11,4 +11,4 @@ COPY pyproject.toml poetry.lock ./
 RUN poetry install --no-interaction --no-ansi --without dev
 
 EXPOSE 10000
-CMD  ["sh", "-c", "poetry run alembic upgrade head && poetry run uvicorn fast_pr.app:app --host 0.0.0.0 --port $PORT"]
+CMD  ["sh", "-c", "alembic stamp f443fadefcea","poetry run alembic upgrade head && poetry run uvicorn fast_pr.app:app --host 0.0.0.0 --port $PORT"]
