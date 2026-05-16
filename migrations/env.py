@@ -88,15 +88,21 @@ def do_run_migrations(connection):
 
 
 async def run_async_migrations():
+    print(">>> start migrating")
     connectable=async_engine_from_config(
         config.get_section(config.config_ini_section),
         prefix='sqlalchemy.',
         poolclass=pool.NullPool,
     )
+    print(">>> created eng")
 
 
     async with connectable.connect() as connection:
+        print(">>> db conecting")
         await connection.run_sync(do_run_migrations)
+
+
+    print(">>> ready")
 
 
     await connectable.dispose()
