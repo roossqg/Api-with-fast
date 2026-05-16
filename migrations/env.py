@@ -20,6 +20,11 @@ if sys.platform == 'win32':
 
 
 config = context.config
+
+url = Settings.DATABASE_URL
+print(f"DATABASE_URL: {url}")
+config.set_main_option("sqlalchemy.url", url)
+
 config.set_main_option('sqlalchemy.url', Settings().DATABASE_URL) 
 # get metadata object
 

@@ -13,10 +13,10 @@ from fast_pr.database import get_session
 from fast_pr.models import Users
 from fast_pr.settings import settings
 
-SECRET_KEY = 'nothing'
-ALGORITHM = 'HS256'
+SECRET_KEY = settings.SECRET_KEY
+ALGORITHM = settings.ALGORITHM
 
-ACESSS_TOKEN_EXPIRE_MINUTES = 30
+ACESSS_TOKEN_EXPIRE_MINUTES = settings.ACESSS_TOKEN_EXPIRE_MINUTES
 
 pwd_context = PasswordHash.recommended()
 # transform hash
