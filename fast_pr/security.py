@@ -1,3 +1,4 @@
+import os
 from datetime import datetime, timedelta
 from http import HTTPStatus
 from zoneinfo import ZoneInfo
@@ -13,10 +14,10 @@ from fast_pr.database import get_session
 from fast_pr.models import Users
 from fast_pr.settings import settings
 
-SECRET_KEY = settings.SECRET_KEY
-ALGORITHM = settings.ALGORITHM
+SECRET_KEY = os.getenv('SECRET_KEY')
+ALGORITHM = os.getenv('ALGORITHM')
 
-ACESSS_TOKEN_EXPIRE_MINUTES = settings.ACESSS_TOKEN_EXPIRE_MINUTES
+ACESSS_TOKEN_EXPIRE_MINUTES = os.getenv('ACESSS_TOKEN_EXPIRE_MINUTES')
 
 pwd_context = PasswordHash.recommended()
 # transform hash

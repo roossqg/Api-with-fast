@@ -1,9 +1,9 @@
+import os
 from http import HTTPStatus
 
 from jwt import decode
 
 from fast_pr.security import create_access_token
-from fast_pr.settings import settings
 
 
 def test_jwt():
@@ -11,7 +11,9 @@ def test_jwt():
     data = {'test': 'test'}
     token = create_access_token(data)
 
-    decoded = decode(token, settings.SECRET_KEY, algorithms=settings.ALGORITHM)
+    decoded = decode(
+        token, os.getenv('SECRET_KEY'), algorithms=os.getenv('ALGORITHM')
+    )
 
     assert decoded['test'] == data['test']
     assert 'exp' in decoded

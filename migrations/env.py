@@ -3,6 +3,7 @@ from logging.config import fileConfig
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 from sqlalchemy.ext.asyncio import async_engine_from_config
+import os 
 
 from alembic import context
 
@@ -21,11 +22,9 @@ if sys.platform == 'win32':
 
 config = context.config
 
-url = Settings.DATABASE_URL
-print(f"DATABASE_URL: {url}")
-config.set_main_option("sqlalchemy.url", url)
+url = os.getenv('DATABASE_URL')
 
-config.set_main_option('sqlalchemy.url', Settings().DATABASE_URL) 
+config.set_main_option('sqlalchemy.url',url) 
 # get metadata object
 
 
