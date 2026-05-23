@@ -3,10 +3,10 @@ from http import HTTPStatus
 from jwt import decode
 
 from fast_pr.security import create_access_token
-from fast_pr.settings import Settings
+import os
 
-SECRET_KEY = Settings.SECRET_KEY
-ALGORITHM = Settings.ALGORITHM
+SECRET_KEY = os.getenv('SECRET_KEY')
+ALGORITHM = os.getenv('ALGORITHM')
 
 def test_jwt():
     """create a fictional token and send to security endpoint"""

@@ -10,7 +10,7 @@ import asyncio
 import sys
 
 from fast_pr.models import table_registry
-from fast_pr.settings import Settings
+import os
 
 if sys.platform == 'win32':
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
@@ -21,7 +21,7 @@ if sys.platform == 'win32':
 
 config = context.config
 
-url = Settings.DATABASE_URL
+url = os.getenv('DATABASE_URL')
 
 if not url:
     raise ValueError("DATABASE_URL not defined")
