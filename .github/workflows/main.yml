@@ -40,6 +40,9 @@ jobs:
       - name: install deps
         run: poetry install
 
+      - name: formats
+        run: poetry run task format
+
       - name: run tests
         run: poetry run task test
         
