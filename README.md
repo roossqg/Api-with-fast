@@ -2,8 +2,8 @@
 
 https://to-do-api-mnup.onrender.com
 
-A simple api where you can create your tasks and view their status.
-after create a login,you can create a task with the structure:
+A Fastapi api where you can create your tasks and view their status.
+task management and authentication:
 
 - _title_: str;
 - _description_: str;
@@ -13,8 +13,27 @@ _status_ consists in four states that you can set you task in create/upgrade.
 
 There's no limit o task creation. 
 
+## Features:
 
-## Techs  (icons)
+- Jwt Authentication
+- Crud task management
+- Postgresql as Database amd Alembic for migrations
+- Automatic Tests
+- Docker Production
+
+### Endpoints:
+- auth
+![alt text](image.png)
+
+- user management and database read
+![alt text](image-2.png)
+
+- task management
+![alt text](image-1.png)
+
+
+
+## Techs
 - Fastapi: Python backend api structure
     - Sqlalchemy: Python database interations
     - Postgresql: robust database
@@ -33,21 +52,54 @@ There's no limit o task creation.
 - Enviroitment
     Poetry: install dependencies
 
-### Arquiteture (tree+docs print)
+## Arquiteture
+
+fast_pr/
+    fast_pr/
+        routers/
+            - auth.py
+            - to_do.py
+            - users.py
+        - app.py
+        - database.py
+        - models.py
+        - schemas.py
+        - security.py
+    migrations/
+        versions/
+        env.py
+    tests/
 
 
-### Variables
+### Variables/.env example
 #### User:
-- DATABASE_URL: user info and task storage address
-- SECRET_KEY: user password
-- ALGORITHM: use to create hashs
-- TOKEN_EXPIRE_MINUTES: expire jwt token
+- DATABASE_URL: user info and task storage address (str)
+- SECRET_KEY: user password (str)
+- ALGORITHM: use to create hashs (str)
+- TOKEN_EXPIRE_MINUTES: time to expire jwt token (int)
 
 #### Database:
 - POSTGRES_USER
 - POSTGRES_DB
 - POSTGRES_PASSWORD
 
-## How Use/Examples (install+init+use/example sucess)
+## How Install-Use
 
-+app rotation fluxogram
+First,you need have installed pre-requisites
+- Docker
+- Docker compose
+
+1.clone
+<code>
+git clone https://github.com/roossqg/Api-with-fast
+cd project...
+<code>
+
+2.Create a __.env__ in your repo with  project variables
+
+3.docker:
+<code>
+docker compose up --build
+<code>
+
+
