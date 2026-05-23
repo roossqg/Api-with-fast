@@ -17,7 +17,7 @@ import os
 
 SECRET_KEY = os.getenv('SECRET_KEY')
 ALGORITHM = os.getenv('ALGORITHM')
-ACESSS_TOKEN_EXPIRE_MINUTES = os.getenv('ACESSS_TOKEN_EXPIRE_MINUTES')
+ACESSS_TOKEN_EXPIRE_MINUTES = int(os.getenv('ACESSS_TOKEN_EXPIRE_MINUTES'))
 
 pwd_context = PasswordHash.recommended()
 # transform hash
