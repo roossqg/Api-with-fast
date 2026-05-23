@@ -15,6 +15,7 @@ from fast_pr.models import Users, table_registry
 from fast_pr.security import get_hash_password
 
 
+
 class UserFactory(factory.Factory):
     class Meta:
         model = Users

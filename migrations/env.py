@@ -22,12 +22,10 @@ if sys.platform == 'win32':
 
 config = context.config
 
-url = os.getenv("DATABASE_URL")
-print(f">>> DATABASE_URL: {url}") 
+url = Settings.DATABASE_URL
 
 if not url:
     raise ValueError("DATABASE_URL not defined")
-
 
 config.set_main_option('sqlalchemy.url',url) 
 # get metadata object

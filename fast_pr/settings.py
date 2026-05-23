@@ -2,6 +2,7 @@ from typing import Annotated
 
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
+import os
 
 
 # class with server-api configured
@@ -10,10 +11,10 @@ class Settings(BaseSettings):
         env_file='.env', env_file_encoding='utf-8', extra='ignore'
     )  # link database
 
-    DATABASE_URL: Annotated[str, Field(init=False)]  # db object format
-    ALGORITHM: Annotated[str, Field(init=False)]
-    SECRET_KEY: Annotated[str, Field(init=False)]
-    ACESSS_TOKEN_EXPIRE_MINUTES: Annotated[int, Field(init=False)]
+    DATABASE_URL = os.getenv('DATABASE_URL') # db object format
+    ALGORITHM = os.getenv('ALGORITHM')
+    SECRET_KEY = os.getenv('SECRET_KEY')
+    ACESSS_TOKEN_EXPIRE_MINUTES = os.getenv('ACESSS_TOKEN_EXPIRE_MINUTES')
 
 
 # preset

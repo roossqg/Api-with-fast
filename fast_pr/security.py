@@ -12,11 +12,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from fast_pr.database import get_session
 from fast_pr.models import Users
+from fast_pr.settings import Settings
 
-SECRET_KEY = os.getenv('SECRET_KEY')
-ALGORITHM = os.getenv('ALGORITHM')
 
-ACESSS_TOKEN_EXPIRE_MINUTES = int(os.getenv('ACESSS_TOKEN_EXPIRE_MINUTES'))
+
+SECRET_KEY = Settings.SECRET_KEY
+ALGORITHM = Settings.ALGORITHM
+ACESSS_TOKEN_EXPIRE_MINUTES = Settings.ACESSS_TOKEN_EXPIRE_MINUTES
 
 pwd_context = PasswordHash.recommended()
 # transform hash
