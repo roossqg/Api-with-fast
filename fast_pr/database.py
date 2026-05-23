@@ -4,7 +4,7 @@ import os
 
 DATABASE_URL = Settings.DATABASE_URL
 
-engine = create_async_engine(os.getenv('DATABASE_URL'))
+engine = create_async_engine(DATABASE_URL)
 
 
 async def get_session():
